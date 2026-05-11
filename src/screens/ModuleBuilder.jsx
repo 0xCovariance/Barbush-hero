@@ -22,7 +22,7 @@ export function ModuleBuilder() {
         <p className="text-sm text-ink-200">
           Build your own practice modules. {unlocked ? 'Unlocked — Phase 2 will activate this screen.' : `Finish all 4 pre-built modules first (${completed.length}/4).`}
         </p>
-        <Link to="/" className="btn-secondary w-full mt-4 inline-flex justify-center">
+        <Link to="/guitar" className="btn-secondary w-full mt-4 inline-flex justify-center">
           Back home
         </Link>
       </Card>

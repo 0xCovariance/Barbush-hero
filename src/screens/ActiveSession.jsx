@@ -32,7 +32,7 @@ export function ActiveSession() {
   }, [active?.index]);
 
   useEffect(() => {
-    if (!active && !lastSummary) navigate('/', { replace: true });
+    if (!active && !lastSummary) navigate('/guitar', { replace: true });
   }, [active, lastSummary, navigate]);
 
   if (lastSummary) {
@@ -41,13 +41,13 @@ export function ActiveSession() {
         summary={lastSummary}
         onDismiss={() => {
           clearSummary();
-          navigate('/', { replace: true });
+          navigate('/guitar', { replace: true });
         }}
         onPracticeMore={() => {
           clearSummary();
           const nextModuleId = activeModuleId(completedModuleIds);
           if (!nextModuleId) {
-            navigate('/', { replace: true });
+            navigate('/guitar', { replace: true });
             return;
           }
           startSession({
@@ -92,7 +92,7 @@ export function ActiveSession() {
 
   function cancelAll() {
     cancelSession();
-    navigate('/');
+    navigate('/guitar');
   }
 
   return (

@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { usePianoStore, AVATARS, COLORS } from '../store/pianoStore.js';
 import { Card } from '../components/ui/Card.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { FamilyLeaderboard } from '../components/piano/FamilyLeaderboard.jsx';
 
 export function PianoFamily() {
+  const navigate = useNavigate();
   const members = usePianoStore((s) => s.members);
   const familyName = usePianoStore((s) => s.familyName);
   const setFamilyName = usePianoStore((s) => s.setFamilyName);
@@ -173,6 +174,10 @@ export function PianoFamily() {
           <FamilyLeaderboard />
         </Card>
       )}
+
+      <Button onClick={() => navigate('/piano')} className="w-full">
+        {members.length === 0 ? 'Maybe later' : `Done — let's play 🎹`}
+      </Button>
     </div>
   );
 }

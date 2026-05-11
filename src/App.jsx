@@ -4,6 +4,7 @@ import {
 } from 'react-router-dom';
 import { useUserStore } from './store/userStore.js';
 import { Onboarding } from './screens/Onboarding.jsx';
+import { ModeChooser } from './screens/ModeChooser.jsx';
 import { Home } from './screens/Home.jsx';
 import { ModulesLibrary } from './screens/ModulesLibrary.jsx';
 import { WeeklyPlan } from './screens/WeeklyPlan.jsx';
@@ -48,7 +49,7 @@ function ReminderArmer() {
 }
 
 const NAV = [
-  { to: '/', label: 'Home', icon: '🏠' },
+  { to: '/guitar', label: 'Home', icon: '🏠' },
   { to: '/modules', label: 'Modules', icon: '🎼' },
   { to: '/plan', label: 'Plan', icon: '📅' },
   { to: '/progress', label: 'Stats', icon: '📈' },
@@ -57,7 +58,7 @@ const NAV = [
 
 function TabBar() {
   const loc = useLocation();
-  if (loc.pathname === '/session' || loc.pathname === '/welcome') return null;
+  if (loc.pathname === '/' || loc.pathname === '/session' || loc.pathname === '/welcome') return null;
   if (loc.pathname.startsWith('/piano')) return null;
   return (
     <nav className="fixed bottom-0 inset-x-0 bg-ink-900/95 backdrop-blur border-t border-ink-700 z-30">
@@ -66,7 +67,7 @@ function TabBar() {
           <NavLink
             key={n.to}
             to={n.to}
-            end={n.to === '/'}
+            end={n.to === '/guitar'}
             className={({ isActive }) =>
               `flex flex-col items-center py-2 text-[10px] min-h-[56px] justify-center gap-1 ${
                 isActive ? 'text-amber-400' : 'text-ink-300'
@@ -102,6 +103,14 @@ export default function App() {
         <Route path="/welcome" element={<Onboarding />} />
         <Route
           path="/"
+          element={
+            <RequireOnboarding>
+              <Shell><ModeChooser /></Shell>
+            </RequireOnboarding>
+          }
+        />
+        <Route
+          path="/guitar"
           element={
             <RequireOnboarding>
               <Shell><Home /></Shell>

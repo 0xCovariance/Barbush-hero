@@ -42,7 +42,7 @@ export function WeeklyPlan() {
     });
     // Phase 2 hook — calendar integration. Returns null in Phase 1.
     await calendarAddEvent();
-    navigate('/');
+    navigate('/guitar');
   }
 
   return (
