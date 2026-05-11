@@ -7,7 +7,7 @@ const initialUser = {
   userId: null,
   createdAt: null,
   onboardingComplete: false,
-  goal: null,                  // 'consistency' | 'skill' | 'creative'
+  goals: [],                   // array of 'consistency' | 'skill' | 'creative'
   dailyMinutes: 20,
   practiceDays: ['mon', 'tue', 'wed', 'thu', 'fri'],
   reminderTime: '18:30',
@@ -89,7 +89,16 @@ export const useUserStore = create(
     {
       name: 'barbush-hero-user',
       storage: createJSONStorage(() => localStorage),
-      version: 1,
+      version: 2,
+      migrate: (persisted, version) => {
+        if (persisted && version < 2) {
+          if (typeof persisted.goal === 'string' && !Array.isArray(persisted.goals)) {
+            persisted.goals = persisted.goal ? [persisted.goal] : [];
+          }
+          delete persisted.goal;
+        }
+        return persisted;
+      },
     },
   ),
 );
