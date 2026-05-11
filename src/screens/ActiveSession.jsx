@@ -5,8 +5,8 @@ import { useUserStore } from '../store/userStore.js';
 import { getModule } from '../data/modules.js';
 import { Card } from '../components/ui/Card.jsx';
 import { Button } from '../components/ui/Button.jsx';
-import { Timer } from '../components/ui/Timer.jsx';
 import { Confetti } from '../components/ui/Confetti.jsx';
+import { ExerciseRenderer } from '../components/exercises/ExerciseRenderer.jsx';
 import { todayKey } from '../utils/dateUtils.js';
 
 export function ActiveSession() {
@@ -20,14 +20,10 @@ export function ActiveSession() {
   const cancelSession = useSessionStore((s) => s.cancelSession);
   const recordSessionCompletion = useUserStore((s) => s.recordSessionCompletion);
 
-  const [paused, setPaused] = useState(false);
-  const [askingOutcome, setAskingOutcome] = useState(false);
   const [exerciseStartedAt, setExerciseStartedAt] = useState(Date.now());
 
   useEffect(() => {
     setExerciseStartedAt(Date.now());
-    setAskingOutcome(false);
-    setPaused(false);
   }, [active?.index]);
 
   useEffect(() => {
@@ -51,17 +47,13 @@ export function ActiveSession() {
   const exercise = active.exercises[active.index];
   const mod = getModule(active.moduleId);
   const variant = active.variant;
-  const totalSeconds = exercise.durationMinutes[variant] * 60;
+  const elapsedSec = Math.round((Date.now() - exerciseStartedAt) / 1000);
 
   function handleOutcome(outcome) {
     const actual = Math.round((Date.now() - exerciseStartedAt) / 1000);
     recordResult({ outcome, actualDurationSeconds: actual });
     const moved = advance();
-    if (!moved) {
-      finishAndAward();
-    } else {
-      setAskingOutcome(false);
-    }
+    if (!moved) finishAndAward();
   }
 
   async function finishAndAward() {
@@ -76,21 +68,16 @@ export function ActiveSession() {
     }
   }
 
-  function doneEarly() {
-    setPaused(true);
-    setAskingOutcome(true);
-  }
-
   function cancelAll() {
     cancelSession();
     navigate('/');
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pb-2">
       <header className="flex items-center justify-between">
-        <div>
-          <p className="label">{mod?.title}</p>
+        <div className="min-w-0">
+          <p className="label truncate">{mod?.title}</p>
           <h1 className="font-display text-lg">
             Exercise {active.index + 1} of {active.exercises.length}
           </h1>
@@ -98,49 +85,52 @@ export function ActiveSession() {
         <Button variant="ghost" onClick={cancelAll}>Quit</Button>
       </header>
 
+      <ProgressDots
+        total={active.exercises.length}
+        current={active.index}
+      />
+
       <Card>
-        <h2 className="font-display text-2xl">{exercise.title}</h2>
-        <p className="text-sm text-ink-200 mt-2 leading-relaxed">{exercise.instructions[variant]}</p>
-        <div className="mt-2 flex gap-2 text-xs">
-          <span className="chip">{exercise.durationMinutes[variant]} min</span>
-          <span className="chip">{exercise.xpReward[variant]} XP</span>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="font-display text-2xl truncate">{exercise.title}</h2>
+          <span className="chip shrink-0">{exercise.xpReward[variant]} XP</span>
         </div>
+        <ExerciseRenderer exercise={exercise} variant={variant} />
       </Card>
 
-      <div className="flex justify-center py-2">
-        <Timer
-          totalSeconds={totalSeconds}
-          paused={paused || askingOutcome}
-          onElapsed={() => setAskingOutcome(true)}
-        />
-      </div>
-
-      {!askingOutcome ? (
-        <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            onClick={() => setPaused((p) => !p)}
-            className="flex-1"
-          >
-            {paused ? 'Resume' : 'Pause'}
+      <Card>
+        <p className="text-sm text-ink-300 text-center">
+          Done with this exercise?
+        </p>
+        <div className="flex gap-2 mt-3">
+          <Button onClick={() => handleOutcome('completed')} className="flex-1">
+            Got it ✓
           </Button>
-          <Button variant="secondary" onClick={doneEarly} className="flex-1">
-            Done early
+          <Button variant="secondary" onClick={() => handleOutcome('requeued')} className="flex-1">
+            Need more time ↩
           </Button>
         </div>
-      ) : (
-        <Card>
-          <p className="font-display text-lg text-center">How did it go?</p>
-          <div className="flex gap-2 mt-4">
-            <Button onClick={() => handleOutcome('completed')} className="flex-1">
-              Got it ✓
-            </Button>
-            <Button variant="secondary" onClick={() => handleOutcome('requeued')} className="flex-1">
-              Need more time ↩
-            </Button>
-          </div>
-        </Card>
-      )}
+        <p className="text-[10px] text-ink-400 text-center mt-2">
+          {Math.floor(elapsedSec / 60)}m {elapsedSec % 60}s on this exercise
+        </p>
+      </Card>
+    </div>
+  );
+}
+
+function ProgressDots({ total, current }) {
+  return (
+    <div className="flex items-center gap-1 px-1">
+      {Array.from({ length: total }).map((_, i) => (
+        <div
+          key={i}
+          className={`flex-1 h-1.5 rounded-full ${
+            i < current ? 'bg-amber-400'
+            : i === current ? 'bg-amber-400/60'
+            : 'bg-ink-600'
+          }`}
+        />
+      ))}
     </div>
   );
 }
