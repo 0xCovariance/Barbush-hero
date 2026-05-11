@@ -3,7 +3,7 @@ import { useUserStore } from '../store/userStore.js';
 import { useStreak } from '../hooks/useStreak.js';
 import { usePlan } from '../hooks/usePlan.js';
 import { getModule, MODULES } from '../data/modules.js';
-import { exercisesForSession, variantForMinutes } from '../services/planService.js';
+import { exercisesForSession, variantForMinutes, moduleProgress } from '../services/planService.js';
 import { useSessionStore } from '../store/sessionStore.js';
 import { Card } from '../components/ui/Card.jsx';
 import { Button } from '../components/ui/Button.jsx';
@@ -15,18 +15,24 @@ export function Home() {
   const navigate = useNavigate();
   const totalXP = useUserStore((s) => s.totalXP);
   const dailyMinutes = useUserStore((s) => s.dailyMinutes);
+  const completedExerciseIds = useUserStore((s) => s.completedExerciseIds);
   const { currentStreak } = useStreak();
   const { plan, activeModuleId, practiceToday } = usePlan();
   const startSession = useSessionStore((s) => s.startSession);
 
   const activeModule = activeModuleId ? getModule(activeModuleId) : null;
-  const exercises = activeModule ? exercisesForSession(activeModuleId, dailyMinutes) : [];
+  const exercises = activeModule
+    ? exercisesForSession(activeModuleId, dailyMinutes, completedExerciseIds)
+    : [];
   const variant = variantForMinutes(dailyMinutes);
   const totalDuration = exercises.reduce((sum, e) => sum + e.durationMinutes[variant], 0);
+  const progress = activeModuleId ? moduleProgress(activeModuleId, completedExerciseIds) : { done: 0, total: 0 };
+  const isReviewMode = activeModule && progress.done >= progress.total;
+  const firstExerciseTitle = exercises[0]?.title;
 
   function start() {
     if (!activeModuleId) return;
-    startSession({ moduleId: activeModuleId, dailyMinutes });
+    startSession({ moduleId: activeModuleId, dailyMinutes, completedExerciseIds });
     navigate('/session');
   }
 
@@ -52,11 +58,26 @@ export function Home() {
         {activeModule ? (
           <>
             <h2 className="text-xl font-display mt-2">{activeModule.title}</h2>
-            <p className="text-sm text-ink-300 mt-1">{activeModule.description}</p>
+            <p className="text-sm text-ink-300 mt-1">
+              {isReviewMode
+                ? 'All exercises done — one more pass to lock it in, then the next module.'
+                : `Up next: ${firstExerciseTitle}`}
+            </p>
+            <div className="mt-3 flex items-center gap-2 text-xs">
+              <span className="text-ink-300">Module progress</span>
+              <span className="font-display text-ink-100">{progress.done} / {progress.total}</span>
+              <div className="flex-1 h-1.5 rounded-full bg-ink-700 overflow-hidden">
+                <div
+                  className="h-full bg-amber-400 transition-[width] duration-500"
+                  style={{ width: `${(progress.done / Math.max(1, progress.total)) * 100}%` }}
+                />
+              </div>
+            </div>
             <div className="mt-4 flex items-center gap-2 flex-wrap">
-              <span className="chip">{exercises.length} exercises</span>
+              <span className="chip">{exercises.length} today</span>
               <span className="chip">~{totalDuration} min</span>
-              <span className="chip">{variant} variant</span>
+              <span className="chip">{variant}</span>
+              {isReviewMode && <span className="chip bg-amber-400 text-ink-900">Review</span>}
             </div>
             <div className="mt-5">
               {practiceToday ? (

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../store/sessionStore.js';
 import { useUserStore } from '../store/userStore.js';
 import { getModule } from '../data/modules.js';
+import { activeModuleId, moduleProgress } from '../services/planService.js';
 import { Card } from '../components/ui/Card.jsx';
 import { Button } from '../components/ui/Button.jsx';
 import { Confetti } from '../components/ui/Confetti.jsx';
@@ -14,11 +15,15 @@ export function ActiveSession() {
   const active = useSessionStore((s) => s.active);
   const lastSummary = useSessionStore((s) => s.lastSummary);
   const clearSummary = useSessionStore((s) => s.clearSummary);
+  const startSession = useSessionStore((s) => s.startSession);
   const recordResult = useSessionStore((s) => s.recordResult);
   const advance = useSessionStore((s) => s.advance);
   const finishSession = useSessionStore((s) => s.finishSession);
   const cancelSession = useSessionStore((s) => s.cancelSession);
   const recordSessionCompletion = useUserStore((s) => s.recordSessionCompletion);
+  const dailyMinutes = useUserStore((s) => s.dailyMinutes);
+  const completedExerciseIds = useUserStore((s) => s.completedExerciseIds);
+  const completedModuleIds = useUserStore((s) => s.completedModuleIds);
 
   const [exerciseStartedAt, setExerciseStartedAt] = useState(Date.now());
 
@@ -38,6 +43,19 @@ export function ActiveSession() {
           clearSummary();
           navigate('/', { replace: true });
         }}
+        onPracticeMore={() => {
+          clearSummary();
+          const nextModuleId = activeModuleId(completedModuleIds);
+          if (!nextModuleId) {
+            navigate('/', { replace: true });
+            return;
+          }
+          startSession({
+            moduleId: nextModuleId,
+            dailyMinutes,
+            completedExerciseIds,
+          });
+        }}
       />
     );
   }
@@ -48,6 +66,7 @@ export function ActiveSession() {
   const mod = getModule(active.moduleId);
   const variant = active.variant;
   const elapsedSec = Math.round((Date.now() - exerciseStartedAt) / 1000);
+  const progress = moduleProgress(active.moduleId, completedExerciseIds);
 
   function handleOutcome(outcome) {
     const actual = Math.round((Date.now() - exerciseStartedAt) / 1000);
@@ -59,12 +78,15 @@ export function ActiveSession() {
   async function finishAndAward() {
     const summary = await finishSession();
     if (summary) {
-      recordSessionCompletion({
+      const result = recordSessionCompletion({
         xpEarned: summary.xpEarned,
         moduleId: summary.moduleId,
-        finishedModule: summary.finishedModule,
+        completedExerciseIds: summary.completedExerciseIds,
         todayKey: todayKey(),
       });
+      // Attach the freshly-computed module-completion flag so the
+      // CompletionScreen can show the badge if the module just finished.
+      summary.finishedModule = !!result?.finishedModule;
     }
   }
 
@@ -77,7 +99,7 @@ export function ActiveSession() {
     <div className="space-y-5 pb-2">
       <header className="flex items-center justify-between">
         <div className="min-w-0">
-          <p className="label truncate">{mod?.title}</p>
+          <p className="label truncate">{mod?.title} · {progress.done} / {progress.total} done</p>
           <h1 className="font-display text-lg">
             Exercise {active.index + 1} of {active.exercises.length}
           </h1>
@@ -99,9 +121,7 @@ export function ActiveSession() {
       </Card>
 
       <Card>
-        <p className="text-sm text-ink-300 text-center">
-          Done with this exercise?
-        </p>
+        <p className="text-sm text-ink-300 text-center">Done with this exercise?</p>
         <div className="flex gap-2 mt-3">
           <Button onClick={() => handleOutcome('completed')} className="flex-1">
             Got it ✓
@@ -135,7 +155,15 @@ function ProgressDots({ total, current }) {
   );
 }
 
-function CompletionScreen({ summary, onDismiss }) {
+function CompletionScreen({ summary, onDismiss, onPracticeMore }) {
+  const completedExerciseIds = useUserStore((s) => s.completedExerciseIds);
+  const completedModuleIds = useUserStore((s) => s.completedModuleIds);
+  const nextModuleId = activeModuleId(completedModuleIds);
+  const nextProgress = nextModuleId
+    ? moduleProgress(nextModuleId, completedExerciseIds)
+    : null;
+  const moreRemaining = nextProgress ? nextProgress.total - nextProgress.done : 0;
+
   return (
     <div className="space-y-5">
       <Confetti show count={48} />
@@ -179,7 +207,14 @@ function CompletionScreen({ summary, onDismiss }) {
         ))}
       </div>
 
-      <Button className="w-full" onClick={onDismiss}>Back home</Button>
+      {moreRemaining > 0 && (
+        <Button onClick={onPracticeMore} className="w-full">
+          Practice more ({moreRemaining} left in module)
+        </Button>
+      )}
+      <Button variant="secondary" className="w-full" onClick={onDismiss}>
+        Back home
+      </Button>
     </div>
   );
 }

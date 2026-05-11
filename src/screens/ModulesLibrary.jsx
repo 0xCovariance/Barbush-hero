@@ -10,13 +10,14 @@ import { Button } from '../components/ui/Button.jsx';
 export function ModulesLibrary() {
   const navigate = useNavigate();
   const completedModuleIds = useUserStore((s) => s.completedModuleIds);
+  const completedExerciseIds = useUserStore((s) => s.completedExerciseIds);
   const dailyMinutes = useUserStore((s) => s.dailyMinutes);
   const startSession = useSessionStore((s) => s.startSession);
   const [expanded, setExpanded] = useState(null);
   const variant = variantForMinutes(dailyMinutes);
 
   function start(moduleId) {
-    startSession({ moduleId, dailyMinutes });
+    startSession({ moduleId, dailyMinutes, completedExerciseIds });
     navigate('/session');
   }
 
