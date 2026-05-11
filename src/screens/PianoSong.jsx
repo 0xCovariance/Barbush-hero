@@ -17,7 +17,7 @@ const MODES = {
 };
 
 function rangeFromNotes(notes, pad = 2) {
-  const midis = notes.map((n) => n.midi);
+  const midis = notes.filter((n) => !n.rest).map((n) => n.midi);
   let low = Math.min(...midis) - pad;
   let high = Math.max(...midis) + pad;
   // Clamp & ensure at least an octave visible.
@@ -27,13 +27,15 @@ function rangeFromNotes(notes, pad = 2) {
   return { low, high };
 }
 
+// Rests advance time but produce no playable note.
 function withStartBeats(notes) {
   let t = 0;
-  return notes.map((n) => {
-    const out = { ...n, startBeat: t };
+  const out = [];
+  for (const n of notes) {
+    if (!n.rest) out.push({ ...n, startBeat: t });
     t += n.beats;
-    return out;
-  });
+  }
+  return out;
 }
 
 function computeStars(score) {

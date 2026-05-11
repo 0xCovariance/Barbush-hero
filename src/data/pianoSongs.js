@@ -3,10 +3,33 @@
 // Songs are kept in C major / simple ranges so kids can play with one hand.
 
 const G3 = 55, A3 = 57, B3 = 59;
-const C4 = 60, D4 = 62, E4 = 64, F4 = 65, G4 = 67, A4 = 69, B4 = 71;
+const C4 = 60, D4 = 62, Eb4 = 63, E4 = 64, F4 = 65, Gb4 = 66, G4 = 67, Ab4 = 68, A4 = 69, Bb4 = 70, B4 = 71;
 const C5 = 72, D5 = 74, E5 = 76, F5 = 77, G5 = 79, A5 = 81;
 
 export const SONGS = [
+  {
+    songId: 'pink-panther',
+    title: 'The Pink Panther',
+    emoji: '🐈',
+    difficulty: 3,
+    category: 'featured',
+    bpm: 110,
+    description: "Henry Mancini's sneaky, jazzy classic.",
+    notes: [
+      // "Dum di… dum di… dum di-dum di-dum-dum"
+      { midi: E4, beats: 0.5 }, { midi: G4, beats: 0.5 },
+      { rest: true, beats: 0.5 },
+      { midi: E4, beats: 0.5 }, { midi: G4, beats: 0.5 }, { midi: Ab4, beats: 0.5 },
+      { midi: A4, beats: 0.5 }, { midi: C5, beats: 0.5 }, { midi: B4, beats: 1.5 },
+      { rest: true, beats: 1 },
+      // Repeat phrase, descending tail
+      { midi: E4, beats: 0.5 }, { midi: G4, beats: 0.5 },
+      { rest: true, beats: 0.5 },
+      { midi: E4, beats: 0.5 }, { midi: G4, beats: 0.5 }, { midi: Ab4, beats: 0.5 },
+      { midi: A4, beats: 0.5 }, { midi: C5, beats: 0.5 }, { midi: B4, beats: 0.5 },
+      { midi: A4, beats: 0.5 }, { midi: G4, beats: 0.5 }, { midi: E4, beats: 2 },
+    ],
+  },
   {
     songId: 'twinkle',
     title: 'Twinkle, Twinkle, Little Star',
@@ -226,6 +249,7 @@ export const SONGS = [
 ];
 
 export const SONG_CATEGORIES = [
+  { id: 'featured', label: 'Featured', emoji: '⭐' },
   { id: 'classical-kids', label: 'Classic kids songs', emoji: '🎵' },
   { id: 'popular-kids', label: 'Songs kids love', emoji: '🌟' },
   { id: 'classical', label: 'Famous classical', emoji: '🎼' },
