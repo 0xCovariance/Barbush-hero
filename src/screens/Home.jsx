@@ -132,6 +132,23 @@ export function Home() {
         </div>
       </Card>
 
+      <Link
+        to="/piano"
+        className="block rounded-2xl p-5 bg-gradient-to-br from-amber-400/30 via-amber-400/10 to-ink-700 border border-amber-400/30 hover:from-amber-400/40 transition"
+      >
+        <div className="flex items-center gap-4">
+          <div className="text-4xl" aria-hidden>🎹</div>
+          <div className="flex-1">
+            <p className="label text-amber-300">New · for kids</p>
+            <h2 className="font-display text-lg mt-1">Piano Kids</h2>
+            <p className="text-xs text-ink-200 mt-1">
+              Songs they love, family leaderboard, daily quests.
+            </p>
+          </div>
+          <div className="text-ink-200 text-xl">›</div>
+        </div>
+      </Link>
+
       <Card>
         <p className="label">Modules</p>
         <div className="mt-3 space-y-2">
