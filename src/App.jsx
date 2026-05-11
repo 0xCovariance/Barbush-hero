@@ -11,6 +11,9 @@ import { ActiveSession } from './screens/ActiveSession.jsx';
 import { Progress } from './screens/Progress.jsx';
 import { Settings } from './screens/Settings.jsx';
 import { ModuleBuilder } from './screens/ModuleBuilder.jsx';
+import { PianoHome } from './screens/PianoHome.jsx';
+import { PianoSong } from './screens/PianoSong.jsx';
+import { PianoFamily } from './screens/PianoFamily.jsx';
 import { LysiBubble } from './components/lysi/LysiBubble.jsx';
 import { scheduleReminder, permissionState } from './services/notificationService.js';
 import { activeModuleId, isPracticeToday } from './services/planService.js';
@@ -55,6 +58,7 @@ const NAV = [
 function TabBar() {
   const loc = useLocation();
   if (loc.pathname === '/session' || loc.pathname === '/welcome') return null;
+  if (loc.pathname.startsWith('/piano')) return null;
   return (
     <nav className="fixed bottom-0 inset-x-0 bg-ink-900/95 backdrop-blur border-t border-ink-700 z-30">
       <div className="max-w-md mx-auto grid grid-cols-5">
@@ -149,6 +153,30 @@ export default function App() {
           element={
             <RequireOnboarding>
               <Shell><ModuleBuilder /></Shell>
+            </RequireOnboarding>
+          }
+        />
+        <Route
+          path="/piano"
+          element={
+            <RequireOnboarding>
+              <Shell><PianoHome /></Shell>
+            </RequireOnboarding>
+          }
+        />
+        <Route
+          path="/piano/family"
+          element={
+            <RequireOnboarding>
+              <Shell><PianoFamily /></Shell>
+            </RequireOnboarding>
+          }
+        />
+        <Route
+          path="/piano/song/:songId"
+          element={
+            <RequireOnboarding>
+              <Shell><PianoSong /></Shell>
             </RequireOnboarding>
           }
         />
