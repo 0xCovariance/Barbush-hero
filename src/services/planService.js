@@ -44,12 +44,31 @@ export function buildPlan({ practiceDays, dailyMinutes, completedModuleIds = [] 
   return { scheduledSessions, variant, moduleId };
 }
 
-// Pick which exercises to include in a session given the budget.
-export function exercisesForSession(moduleId, dailyMinutes) {
+// Pick which exercises to include in the next session given the budget and
+// the user's per-exercise completion history. Resumes from where the user
+// left off in the active module. If every exercise has been completed once
+// already (e.g. all "Got it") we return the first N as a review session.
+export function exercisesForSession(moduleId, dailyMinutes, completedExerciseIds = []) {
   const m = getModule(moduleId);
   if (!m) return [];
   const n = exerciseCountForBudget(dailyMinutes, m.exercises.length);
-  return m.exercises.slice(0, n);
+  const done = new Set(completedExerciseIds);
+  const remaining = m.exercises.filter((e) => !done.has(e.exerciseId));
+  if (remaining.length === 0) {
+    return m.exercises.slice(0, n); // review mode
+  }
+  return remaining.slice(0, n);
+}
+
+// How many exercises in this module are done overall.
+export function moduleProgress(moduleId, completedExerciseIds = []) {
+  const m = getModule(moduleId);
+  if (!m) return { done: 0, total: 0 };
+  const done = new Set(completedExerciseIds);
+  return {
+    done: m.exercises.filter((e) => done.has(e.exerciseId)).length,
+    total: m.exercises.length,
+  };
 }
 
 // True when the plan calendar includes today.

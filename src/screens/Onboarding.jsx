@@ -23,7 +23,7 @@ export function Onboarding() {
   const completedModuleIds = useUserStore((s) => s.completedModuleIds);
 
   const [step, setStep] = useState(0);
-  const [goal, setGoal] = useState('consistency');
+  const [goals, setGoals] = useState(['consistency']);
   const [dailyMinutes, setDailyMinutes] = useState(20);
   const [practiceDays, setPracticeDays] = useState(['mon', 'tue', 'wed', 'thu', 'fri']);
   const [reminderTime, setReminderTime] = useState('18:30');
@@ -33,8 +33,12 @@ export function Onboarding() {
     setPracticeDays((cur) => (cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d]));
   }
 
+  function toggleGoal(id) {
+    setGoals((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
+  }
+
   async function finish() {
-    completeOnboarding({ goal, dailyMinutes, practiceDays, reminderTime });
+    completeOnboarding({ goals, dailyMinutes, practiceDays, reminderTime });
     const plan = buildPlan({ practiceDays, dailyMinutes, completedModuleIds });
     savePlan({
       planId: crypto.randomUUID(),
@@ -65,25 +69,33 @@ export function Onboarding() {
         </header>
 
         {step === 0 && (
-          <Step title="What's your goal?" subtitle="We'll shape your weekly plan around this.">
+          <Step title="What are your goals?" subtitle="Pick one or more — we'll shape your weekly plan around them.">
             <div className="flex flex-col gap-3">
-              {GOALS.map((g) => (
-                <button
-                  key={g.id}
-                  onClick={() => setGoal(g.id)}
-                  className={`text-left card-tight transition ${goal === g.id ? 'border-amber-400 ring-2 ring-amber-400/40' : 'hover:border-ink-500'}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{g.emoji}</span>
-                    <div>
-                      <div className="font-semibold">{g.label}</div>
-                      <div className="text-xs text-ink-300">{g.blurb}</div>
+              {GOALS.map((g) => {
+                const selected = goals.includes(g.id);
+                return (
+                  <button
+                    key={g.id}
+                    onClick={() => toggleGoal(g.id)}
+                    aria-pressed={selected}
+                    className={`text-left card-tight transition ${selected ? 'border-amber-400 ring-2 ring-amber-400/40' : 'hover:border-ink-500'}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{g.emoji}</span>
+                      <div className="flex-1">
+                        <div className="font-semibold">{g.label}</div>
+                        <div className="text-xs text-ink-300">{g.blurb}</div>
+                      </div>
+                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center text-xs ${selected ? 'border-amber-400 bg-amber-400 text-ink-900' : 'border-ink-500'}`}>
+                        {selected ? '✓' : ''}
+                      </div>
                     </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
-            <NextBar onNext={() => setStep(1)} />
+            <p className="text-xs text-ink-400 mt-3">{goals.length || 0} selected</p>
+            <NextBar onNext={() => setStep(1)} nextDisabled={goals.length === 0} />
           </Step>
         )}
 

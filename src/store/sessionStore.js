@@ -1,8 +1,7 @@
 import { create } from 'zustand';
-import { exercisesForSession } from '../services/planService.js';
+import { exercisesForSession, variantForMinutes } from '../services/planService.js';
 import { recordSession } from '../services/sessionService.js';
 import { getModule } from '../data/modules.js';
-import { variantForMinutes } from '../services/planService.js';
 import { todayKey } from '../utils/dateUtils.js';
 
 // Ephemeral state for the currently-running practice session.
@@ -11,8 +10,8 @@ export const useSessionStore = create((set, get) => ({
   active: null,   // { moduleId, variant, exercises[], index, results[], startedAt }
   lastSummary: null,
 
-  startSession({ moduleId, dailyMinutes }) {
-    const exercises = exercisesForSession(moduleId, dailyMinutes);
+  startSession({ moduleId, dailyMinutes, completedExerciseIds = [] }) {
+    const exercises = exercisesForSession(moduleId, dailyMinutes, completedExerciseIds);
     const variant = variantForMinutes(dailyMinutes);
     set({
       active: {
@@ -55,10 +54,9 @@ export const useSessionStore = create((set, get) => ({
       if (r.outcome !== 'completed') return sum;
       return sum + (a.exercises[i].xpReward[a.variant] || 0);
     }, 0);
-    const completedIds = a.results.filter((r) => r.outcome === 'completed').map((r) => r.exerciseId);
-    const finishedModule = mod
-      ? mod.exercises.every((e) => completedIds.includes(e.exerciseId)) && a.exercises.length === mod.exercises.length
-      : false;
+    const completedThisSession = a.results
+      .filter((r) => r.outcome === 'completed')
+      .map((r) => r.exerciseId);
 
     const session = {
       sessionId: crypto.randomUUID(),
@@ -75,7 +73,7 @@ export const useSessionStore = create((set, get) => ({
       moduleId: a.moduleId,
       moduleTitle: mod?.title || 'Practice',
       xpEarned,
-      finishedModule,
+      completedExerciseIds: completedThisSession,
       results: a.results,
     };
     set({ active: null, lastSummary: summary });
