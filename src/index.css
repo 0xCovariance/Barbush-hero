@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-ink-800 text-ink-100 font-sans antialiased;
+    background-image: radial-gradient(1100px 600px at 50% -10%, rgba(232,132,58,0.08), transparent 60%);
+  }
+  h1, h2, h3 {
+    @apply font-display tracking-tight;
+  }
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-ink-700/70 border border-ink-600 rounded-2xl p-5 shadow-lg backdrop-blur-sm;
+  }
+  .card-tight {
+    @apply bg-ink-700/70 border border-ink-600 rounded-2xl p-4;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold transition-colors duration-150 min-h-[48px];
+  }
+  .btn-primary {
+    @apply btn bg-amber-400 text-ink-900 hover:bg-amber-300 active:bg-amber-500 shadow-glow;
+  }
+  .btn-secondary {
+    @apply btn bg-ink-600 text-ink-100 hover:bg-ink-500;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-ink-200 hover:bg-ink-700;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-ink-600 text-ink-200;
+  }
+  .label {
+    @apply text-xs uppercase tracking-widest text-ink-400 font-semibold;
+  }
+}
